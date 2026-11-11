@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<section class="vendor-page">
+    <header class="vendor-page-heading">
+        <div>
+            <span class="eyebrow">PROMO KANTIN</span>
+            <h1 class="font-bold">Voucher siswa</h1>
+            <p class="text-muted">Voucher aktif diterapkan otomatis saat checkout jika subtotal memenuhi minimum pembelian.</p>
+        </div>
+        <div class="vendor-heading-actions">
+            <a class="btn btn-outline" href="{% url 'menu' %}">Kembali ke menu</a>
+        </div>
+    </header>
+
+    <div class="grid-menu">
+        {% for voucher in vouchers %}
+            <article class="card p-4">
+                <span class="eyebrow">VOUCHER AKTIF</span>
+                <h2 class="font-bold">{{ voucher.nama }}</h2>
+                <p class="text-muted">Potongan otomatis Rp {{ voucher.potongan|intcomma }}</p>
+                <p class="text-muted">Minimum pembelian Rp {{ voucher.minimum_pembelian|intcomma }}</p>
+            </article>
+        {% empty %}
+            <div class="card p-4">
+                <h2 class="font-bold">Belum ada voucher aktif</h2>
+                <p class="text-muted">Silakan cek kembali nanti.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

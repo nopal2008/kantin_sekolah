@@ -1,0 +1,38 @@
+<div class="card menu-card">
+    {% if menu.gambar %}
+        <img src="{{ menu.gambar.url }}" alt="{{ menu.nama }}" class="menu-card-img">
+    {% else %}
+        <div class="menu-card-img menu-card-placeholder">
+            {% if menu.kategori == 'makanan_berat' %}
+                <i data-lucide="utensils" aria-hidden="true"></i>
+            {% elif menu.kategori == 'jajanan_ringan' %}
+                <i data-lucide="croissant" aria-hidden="true"></i>
+            {% else %}
+                <i data-lucide="cup-soda" aria-hidden="true"></i>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <div class="menu-card-body">
+        <h3 class="menu-title">{{ menu.nama }}</h3>
+        <p class="menu-price">{{ menu.harga_formatted }}</p>
+        {% if menu.vendor %}
+            <p class="menu-desc">Pedagang: {{ menu.vendor.get_full_name|default:menu.vendor.username }}</p>
+        {% endif %}
+        <p class="menu-desc">{{ menu.deskripsi|truncatechars:60 }}</p>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto;">
+            {% if menu.tersedia %}
+                <span class="badge badge-success">Tersedia: {{ menu.stok }}</span>
+                <button class="btn btn-primary btn-sm" onclick="addToCart('{{ menu.id }}')">
+                    + Keranjang
+                </button>
+            {% else %}
+                <span class="badge badge-danger">Habis</span>
+                <button class="btn btn-outline btn-sm" disabled>
+                    Habis
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="vendor-page vendor-form-page">
+    <header class="vendor-page-heading">
+        <div>
+            <span class="eyebrow">KELOLA KATALOG</span>
+            <h1 class="font-bold">{{ page_title }}</h1>
+        </div>
+        <a class="btn btn-outline" href="{% url 'vendor_menu_list' %}">Kembali ke menu</a>
+    </header>
+
+    <form method="post" enctype="multipart/form-data" class="card vendor-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="vendor-form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% for field in form %}
+            <div class="form-group">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<small class="vendor-field-error">{{ error }}</small>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="vendor-form-actions">
+            <button type="submit" class="btn btn-primary">Simpan menu</button>
+            <a class="btn btn-outline" href="{% url 'vendor_menu_list' %}">Batal</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

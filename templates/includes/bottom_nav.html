@@ -1,0 +1,46 @@
+<nav class="bottom-nav">
+    {% if is_vendor %}
+    <a href="{% url 'vendor_dashboard' %}" class="{% if request.resolver_match.url_name == 'vendor_dashboard' %}active{% endif %}">
+        <i data-lucide="layout-dashboard" aria-hidden="true"></i>
+        <span>Dashboard</span>
+    </a>
+    <a href="{% url 'vendor_menu_list' %}" class="{% if request.resolver_match.url_name == 'vendor_menu_list' %}active{% endif %}">
+        <i data-lucide="utensils" aria-hidden="true"></i>
+        <span>Menu saya</span>
+    </a>
+    <a href="{% url 'vendor_order_list' %}" class="{% if request.resolver_match.url_name == 'vendor_order_list' %}active{% endif %}">
+        <i data-lucide="clipboard-list" aria-hidden="true"></i>
+        <span>Pesanan</span>
+    </a>
+    {% elif is_admin %}
+    <a href="{% url 'admin:index' %}">
+        <i data-lucide="shield-check" aria-hidden="true"></i>
+        <span>Admin</span>
+    </a>
+    <a href="{% url 'vendor_dashboard' %}" class="{% if request.resolver_match.url_name == 'vendor_dashboard' %}active{% endif %}">
+        <i data-lucide="layout-dashboard" aria-hidden="true"></i>
+        <span>Operasional</span>
+    </a>
+    <a href="{% url 'vendor_order_list' %}" class="{% if request.resolver_match.url_name == 'vendor_order_list' %}active{% endif %}">
+        <i data-lucide="clipboard-list" aria-hidden="true"></i>
+        <span>Pesanan</span>
+    </a>
+    {% else %}
+    <a href="{% url 'beranda' %}" class="{% if request.resolver_match.url_name == 'beranda' %}active{% endif %}">
+        <i data-lucide="house" aria-hidden="true"></i>
+        <span>Beranda</span>
+    </a>
+    <a href="{% url 'menu' %}" class="{% if request.resolver_match.url_name == 'menu' %}active{% endif %}">
+        <i data-lucide="utensils" aria-hidden="true"></i>
+        <span>Menu</span>
+    </a>
+    <a href="{% url 'pesananku' %}" class="{% if request.resolver_match.url_name == 'pesananku' %}active{% endif %}">
+        <i data-lucide="clipboard-list" aria-hidden="true"></i>
+        <span>Pesanan</span>
+    </a>
+    <a href="{% url 'profil' %}" class="{% if request.resolver_match.url_name == 'profil' %}active{% endif %}">
+        <i data-lucide="user-round" aria-hidden="true"></i>
+        <span>Profil</span>
+    </a>
+    {% endif %}
+</nav>

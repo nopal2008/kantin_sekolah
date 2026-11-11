@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="vendor-page">
+    <header class="vendor-page-heading">
+        <div>
+            <span class="eyebrow">RUANG KERJA VENDOR</span>
+            <h1 class="font-bold">Dashboard</h1>
+            <p class="text-muted">Ringkasan penjualan dan aktivitas kantin.</p>
+        </div>
+        <div class="vendor-heading-actions">
+            <a class="btn btn-outline" href="{% url 'vendor_order_list' %}">Pesanan</a>
+            <a class="btn btn-outline" href="{% url 'vendor_menu_list' %}">Menu saya</a>
+            <a class="btn btn-primary" href="{% url 'vendor_menu_create' %}">
+                <i data-lucide="plus" aria-hidden="true"></i> Tambah menu
+            </a>
+        </div>
+    </header>
+
+    <div class="vendor-stat-grid">
+        <article class="card vendor-stat">
+            <span class="vendor-stat-icon"><i data-lucide="utensils" aria-hidden="true"></i></span>
+            <span class="text-muted">Total menu</span>
+            <strong>{{ dashboard.menu_count|intcomma }}</strong>
+        </article>
+        <article class="card vendor-stat">
+            <span class="vendor-stat-icon"><i data-lucide="shopping-bag" aria-hidden="true"></i></span>
+            <span class="text-muted">Pesanan hari ini</span>
+            <strong>{{ dashboard.order_count_today|intcomma }}</strong>
+        </article>
+        <article class="card vendor-stat">
+            <span class="vendor-stat-icon"><i data-lucide="banknote" aria-hidden="true"></i></span>
+            <span class="text-muted">Penjualan hari ini</span>
+            <strong>Rp {{ dashboard.revenue_today|intcomma }}</strong>
+        </article>
+    </div>
+
+    <section class="card vendor-chart-card">
+        <div class="vendor-section-heading">
+            <div>
+                <h2 class="font-bold">Ringkasan minggu ini</h2>
+                <p class="text-muted">Grafik harian dan statistik dibandingkan dengan minggu sebelumnya.</p>
+            </div>
+        </div>
+        <div class="vendor-chart-wrap">
+            <canvas id="vendor-weekly-sales-chart" aria-label="Grafik penjualan dan pesanan harian minggu ini"></canvas>
+        </div>
+        <div id="vendor-weekly-statistics"></div>
+    </section>
+
+    <section class="card vendor-chart-card">
+        <div class="vendor-section-heading">
+            <div>
+                <h2 class="font-bold">Ringkasan bulan ini</h2>
+                <p class="text-muted">Grafik harian serta rata-rata, median, modus, dan perubahan dari bulan lalu.</p>
+            </div>
+        </div>
+        <div class="vendor-chart-wrap">
+            <canvas id="vendor-monthly-sales-chart" aria-label="Grafik penjualan dan pesanan harian bulan ini"></canvas>
+        </div>
+        <div id="vendor-monthly-statistics"></div>
+    </section>
+
+    <section class="vendor-stat-grid">
+        <article class="card vendor-stat">
+            <span class="text-muted">Pesanan tahun ini</span>
+            <strong id="vendor-year-orders">0</strong>
+        </article>
+        <article class="card vendor-stat">
+            <span class="text-muted">Penjualan tahun ini</span>
+            <strong id="vendor-year-revenue">Rp 0</strong>
+        </article>
+        <article class="card vendor-stat">
+            <span class="text-muted">Item terjual tahun ini</span>
+            <strong id="vendor-year-units">0</strong>
+        </article>
+    </section>
+</section>
+{{ dashboard|json_script:"vendor-dashboard-data" }}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const dashboard = JSON.parse(document.getElementById('vendor-dashboard-data').textContent);
+    const analytics = dashboard.sales_analytics;
+    const chartFont = { family: 'Inter, system-ui, sans-serif' };
+    const numberFormat = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
+    const rupiahFormat = value => 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+
+    function renderSummary(period, chartId, statsId) {
+        new Chart(document.getElementById(chartId), {
+            type: 'bar',
+            data: {
+                labels: period.labels,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Pesanan',
+                        data: period.orders,
+                        backgroundColor: 'rgba(242, 166, 64, .75)',
+                        borderRadius: 5,
+                        yAxisID: 'yCount'
+                    },
+                    {
+                        type: 'line',
+                        label: 'Item terjual',
+                        data: period.units,
+                        borderColor: '#3578a8',
+                        backgroundColor: '#3578a8',
+                        tension: .3,
+                        yAxisID: 'yCount'
+                    },
+                    {
+                        type: 'line',
+                        label: 'Pendapatan',
+                        data: period.revenue,
+                        borderColor: '#277451',
+                        backgroundColor: 'rgba(39, 116, 81, .12)',
+                        fill: true,
+                        tension: .3,
+                        yAxisID: 'yRevenue'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'bottom', labels: { font: chartFont } } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: chartFont } },
+                    yCount: {
+                        beginAtZero: true,
+                        position: 'left',
+                        title: { display: true, text: 'Pesanan / item' },
+                        ticks: { precision: 0, font: chartFont }
+                    },
+                    yRevenue: {
+                        beginAtZero: true,
+                        position: 'right',
+                        title: { display: true, text: 'Pendapatan' },
+                        grid: { drawOnChartArea: false },
+                        ticks: {
+                            font: chartFont,
+                            callback: value => rupiahFormat(value)
+                        }
+                    }
+                }
+            }
+        });
+
+        const statsRoot = document.getElementById(statsId);
+        const table = document.createElement('table');
+        table.className = 'vendor-table';
+        const headings = ['Metrik', 'Rata-rata/hari', 'Median', 'Modus', 'Perubahan'];
+        const header = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        headings.forEach(label => {
+            const cell = document.createElement('th');
+            cell.textContent = label;
+            headerRow.appendChild(cell);
+        });
+        header.appendChild(headerRow);
+        table.appendChild(header);
+
+        const body = document.createElement('tbody');
+        [
+            ['Pesanan', period.metrics.orders, false],
+            ['Pendapatan', period.metrics.revenue, true],
+            ['Item terjual', period.metrics.units, false]
+        ].forEach(([label, metric, isCurrency]) => {
+            const row = document.createElement('tr');
+            const values = [
+                label,
+                isCurrency ? rupiahFormat(metric.mean) : numberFormat.format(metric.mean),
+                isCurrency ? rupiahFormat(metric.median) : numberFormat.format(metric.median),
+                metric.modes.length
+                    ? metric.modes.map(value => isCurrency ? rupiahFormat(value) : numberFormat.format(value)).join(', ')
+                    : 'Tidak ada',
+                metric.change.label
+            ];
+            values.forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            body.appendChild(row);
+        });
+        table.appendChild(body);
+        statsRoot.appendChild(table);
+        if (period.best_seller) {
+            const bestSeller = document.createElement('p');
+            bestSeller.className = 'text-muted';
+            bestSeller.style.marginTop = '1rem';
+            bestSeller.textContent = `Menu terlaris: ${period.best_seller.name} (${numberFormat.format(period.best_seller.units)} terjual)`;
+            statsRoot.appendChild(bestSeller);
+        }
+    };
+
+    renderSummary(analytics.weekly, 'vendor-weekly-sales-chart', 'vendor-weekly-statistics');
+    renderSummary(analytics.monthly, 'vendor-monthly-sales-chart', 'vendor-monthly-statistics');
+    document.getElementById('vendor-year-orders').textContent = numberFormat.format(analytics.yearly.orders);
+    document.getElementById('vendor-year-revenue').textContent = rupiahFormat(analytics.yearly.revenue);
+    document.getElementById('vendor-year-units').textContent = numberFormat.format(analytics.yearly.units);
+</script>
+{% endblock %}

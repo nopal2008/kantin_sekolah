@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<section class="vendor-page">
+    <header class="vendor-page-heading">
+        <div>
+            <span class="eyebrow">PENGELOLAAN PROMO</span>
+            <h1 class="font-bold">Kelola voucher</h1>
+            <p class="text-muted">Voucher aktif dengan minimum belanja yang tercapai akan diterapkan otomatis. Jika beberapa voucher cocok, potongan terbesar yang digunakan.</p>
+        </div>
+        <div class="vendor-heading-actions">
+            <a class="btn btn-outline" href="{% url 'menu' %}">Lihat halaman menu</a>
+        </div>
+    </header>
+
+    <div class="card p-4 mb-4">
+        <h2 class="font-bold">{% if editing_voucher %}Ubah voucher{% else %}Buat voucher{% endif %}</h2>
+        <form method="post" class="vendor-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}<small class="vendor-field-error">{{ error }}</small>{% endfor %}
+                </div>
+            {% endfor %}
+            {% for error in form.non_field_errors %}<p class="vendor-field-error">{{ error }}</p>{% endfor %}
+            <div class="vendor-form-actions">
+                <button class="btn btn-primary" type="submit">Simpan voucher</button>
+                {% if editing_voucher %}
+                    <a class="btn btn-outline" href="{% url 'voucher_admin' %}">Batal ubah</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <div class="card vendor-table-card">
+        <div class="vendor-table-scroll">
+            <table class="vendor-table">
+                <thead>
+                    <tr>
+                        <th>Nama voucher</th>
+                        <th>Minimum pembelian</th>
+                        <th>Potongan</th>
+                        <th>Status</th>
+                        <th>Tindakan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for voucher in vouchers %}
+                    <tr>
+                        <td data-label="Nama voucher">{{ voucher.nama }}</td>
+                        <td data-label="Minimum pembelian">Rp {{ voucher.minimum_pembelian|intcomma }}</td>
+                        <td data-label="Potongan">Rp {{ voucher.potongan|intcomma }}</td>
+                        <td data-label="Status">{% if voucher.is_active %}Aktif{% else %}Nonaktif{% endif %}</td>
+                        <td data-label="Tindakan">
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <a class="btn btn-outline btn-sm" href="{% url 'voucher_admin_edit' voucher.pk %}">Ubah</a>
+                                <form method="post" action="{% url 'voucher_toggle' voucher.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline btn-sm" type="submit">{% if voucher.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %}</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="vendor-empty" colspan="5">Belum ada voucher.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

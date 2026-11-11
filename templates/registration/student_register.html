@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 520px; margin: 2rem auto;">
+    <div class="card p-4">
+        <h1 class="text-primary font-bold mb-4" style="text-align: center; font-size: 1.5rem;">Daftar Akun Siswa</h1>
+        <p class="text-muted mb-4" style="text-align: center;">Buat akun siswa untuk memesan makanan kantin.</p>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="text-muted" style="font-size: 0.8rem; margin-top: 0.25rem;">{{ field.help_text }}</div>{% endif %}
+                    {% for error in field.errors %}<div class="badge badge-danger" style="margin-top: 0.25rem;">{{ error }}</div>{% endfor %}
+                </div>
+            {% endfor %}
+            {% if form.non_field_errors %}
+                <div class="badge badge-danger mb-4" style="display: block; padding: 0.75rem;">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Daftar sebagai siswa</button>
+        </form>
+        <p class="text-muted" style="text-align: center; margin-top: 1rem;">Sudah punya akun? <a href="{% url 'login' %}">Masuk</a></p>
+    </div>
+</div>
+{% endblock %}

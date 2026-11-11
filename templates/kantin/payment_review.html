@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<section class="vendor-page">
+    <header class="vendor-page-heading">
+        <div>
+            <span class="eyebrow">KHUSUS ADMIN</span>
+            <h1 class="font-bold">Verifikasi pembayaran</h1>
+            <p class="text-muted">Periksa bukti transfer di sini. Tindakan ini berbeda dari proses pesanan pedagang.</p>
+        </div>
+        <div class="vendor-heading-actions">
+            <a class="btn btn-outline" href="{% url 'help_guide' %}">Baca panduan</a>
+        </div>
+    </header>
+
+    <div class="card vendor-table-card">
+        <div class="vendor-table-scroll">
+            <table class="vendor-table">
+                <thead>
+                    <tr>
+                        <th>Antrean / siswa</th>
+                        <th>Jumlah</th>
+                        <th>Metode &amp; referensi</th>
+                        <th>Bukti transfer</th>
+                        <th>Tindakan Admin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in page_obj %}
+                    <tr>
+                        <td data-label="Antrean / siswa">
+                            <strong>{{ payment.pesanan.nomor_antrean }}</strong><br>
+                            {{ payment.pesanan.user.get_full_name|default:payment.pesanan.user.username }}<br>
+                            <span class="text-muted">{{ payment.created_at|date:"d M Y, H:i" }}</span>
+                        </td>
+                        <td data-label="Jumlah">Rp {{ payment.jumlah|intcomma }}</td>
+                        <td data-label="Metode &amp; referensi">
+                            {{ payment.get_metode_display }}<br>
+                            <span class="text-muted">{{ payment.referensi_transfer|default:"Tidak ada referensi" }}</span>
+                        </td>
+                        <td data-label="Bukti transfer">
+                            {% if payment.bukti_transfer %}
+                                <a class="btn btn-outline btn-sm" href="{% url 'payment_proof_file' payment.pk %}" target="_blank" rel="noopener">Lihat bukti</a>
+                            {% else %}
+                                <span class="text-muted">Bukti tidak tersedia</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Tindakan Admin">
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <form method="post" action="{% url 'payment_review_action' payment.pk 'approve' %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-primary btn-sm" type="submit">Verifikasi pembayaran</button>
+                                </form>
+                                <form method="post" action="{% url 'payment_review_action' payment.pk 'reject' %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline btn-sm" type="submit">Tolak &amp; batalkan</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td class="vendor-empty" colspan="5">Tidak ada pembayaran yang menunggu verifikasi.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="pagination" aria-label="Navigasi halaman verifikasi pembayaran">
+        {% if page_obj.has_previous %}<a class="btn btn-outline btn-sm" href="?page={{ page_obj.previous_page_number }}">Sebelumnya</a>{% endif %}
+        <span class="pagination-label">Halaman {{ page_obj.number }} dari {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a class="btn btn-outline btn-sm" href="?page={{ page_obj.next_page_number }}">Berikutnya</a>{% endif %}
+    </nav>
+    {% endif %}
+</section>
+{% endblock %}

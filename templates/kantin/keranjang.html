@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="font-bold mb-4" style="font-size: 1.5rem;">Keranjang Belanja</h1>
+    
+    {% if is_empty %}
+        <div class="card p-4" style="text-align: center; margin-top: 2rem;">
+            <i data-lucide="shopping-basket" class="empty-state-icon" aria-hidden="true"></i>
+            <h3 class="font-bold mb-2">Keranjang masih kosong</h3>
+            <p class="text-muted mb-4">Yuk, cari makanan enak untuk hari ini!</p>
+            <a href="{% url 'menu' %}" class="btn btn-primary">Lihat Menu</a>
+        </div>
+    {% else %}
+        <div class="card mb-4">
+            {% for item in items %}
+                <div class="cart-item">
+                    <div class="cart-item-icon">
+                        {% if item.kategori_icon == 'food' %}
+                            <i data-lucide="utensils" aria-hidden="true"></i>
+                        {% elif item.kategori_icon == 'snack' %}
+                            <i data-lucide="croissant" aria-hidden="true"></i>
+                        {% else %}
+                            <i data-lucide="cup-soda" aria-hidden="true"></i>
+                        {% endif %}
+                    </div>
+                    <div class="cart-item-info">
+                        <h4 class="font-bold">{{ item.nama }}</h4>
+                        <p class="text-primary font-bold mb-2">{{ item.harga_fmt }}</p>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="qty-control">
+                                <button class="qty-btn" onclick="updateCartQty({{ item.id }}, -1)">-</button>
+                                <span style="font-weight: 600; width: 24px; text-align: center;">{{ item.qty }}</span>
+                                <button class="qty-btn" onclick="updateCartQty({{ item.id }}, 1)">+</button>
+                            </div>
+                            <span class="font-bold">{{ item.subtotal_fmt }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="card p-4 mb-4">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span class="text-muted">Total Tagihan</span>
+                <span class="font-bold text-primary" style="font-size: 1.25rem;">{{ total_fmt }}</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem;">
+            <a href="{% url 'menu' %}" class="btn btn-outline" style="flex: 1;">Tambah Lagi</a>
+            <a href="{% url 'checkout' %}" class="btn btn-primary" style="flex: 2;">Checkout Sekarang</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

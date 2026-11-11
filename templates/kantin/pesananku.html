@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="font-bold mb-4" style="font-size: 1.5rem;">Pesananku</h1>
+    
+    <div class="tabs mb-4">
+        <button class="tab-btn active" onclick="switchTab('aktif', this)">Pesanan Aktif</button>
+        <button class="tab-btn" onclick="switchTab('riwayat', this)">Riwayat</button>
+    </div>
+    
+    <!-- Tab: Pesanan Aktif -->
+    <div id="tab-aktif">
+        {% if pesanan_aktif %}
+            {% for pesanan in pesanan_aktif %}
+                <div class="card p-4 mb-4">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <span class="text-muted" style="font-size: 0.875rem;">Nomor Antrean</span>
+                            <h2 class="font-bold text-primary" style="font-size: 2rem;">{{ pesanan.nomor_antrean }}</h2>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="text-muted" style="font-size: 0.875rem;">Total</span>
+                            <h3 class="font-bold">{{ pesanan.total_formatted }}</h3>
+                        </div>
+                    </div>
+                    
+                    {% if pesanan.metode_bayar in 'gopay,dana,ovo' %}
+                    <p class="text-muted">Pembayaran: {{ pesanan.payment.get_status_display }} ({{ pesanan.get_metode_bayar_display }})</p>
+                    {% if pesanan.payment.status == 'pending' %}
+                        <a class="btn btn-primary btn-sm" href="{% url 'payment_submit' pesanan.pk %}">Bayar dan kirim bukti</a>
+                    {% elif pesanan.payment.status == 'submitted' %}
+                        <a class="btn btn-outline btn-sm" href="{% url 'payment_submit' pesanan.pk %}">Lihat status pembayaran</a>
+                    {% endif %}
+                    {% endif %}
+                    <div class="timeline mt-4">
+                        <div class="timeline-item {% if pesanan.status == 'waiting' or pesanan.status == 'cooking' or pesanan.status == 'ready' or pesanan.status == 'done' %}active{% endif %}">
+                            <h4 class="font-bold" style="font-size: 0.875rem;">Menunggu Konfirmasi</h4>
+                        </div>
+                        <div class="timeline-item {% if pesanan.status == 'cooking' or pesanan.status == 'ready' or pesanan.status == 'done' %}active{% endif %}">
+                            <h4 class="font-bold" style="font-size: 0.875rem;">Sedang Diproses</h4>
+                        </div>
+                        <div class="timeline-item {% if pesanan.status == 'ready' or pesanan.status == 'done' %}active{% endif %}">
+                            <h4 class="font-bold" style="font-size: 0.875rem;">Siap Diambil</h4>
+                            {% if pesanan.status == 'ready' %}
+                                <p class="text-muted" style="font-size: 0.75rem;">Ambil pesananmu di loket pengambilan</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="font-bold mb-2">Status tiap pedagang</h3>
+                        {% for pesanan_pedagang in pesanan.pesanan_pedagang.all %}
+                            <p class="text-muted">{% if pesanan_pedagang.vendor %}{{ pesanan_pedagang.vendor.get_full_name|default:pesanan_pedagang.vendor.username }}{% else %}Pedagang{% endif %}: {{ pesanan_pedagang.get_status_display }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card p-4" style="text-align: center; margin-top: 2rem;">
+                <i data-lucide="clipboard-list" class="empty-state-icon" aria-hidden="true"></i>
+                <h3 class="font-bold mb-2">Belum ada pesanan</h3>
+                <p class="text-muted">Yuk pesan makanan favoritmu sekarang!</p>
+            </div>
+        {% endif %}
+        {% if pesanan_aktif.paginator.num_pages > 1 %}
+            <nav class="pagination" aria-label="Navigasi pesanan aktif">
+                {% if pesanan_aktif.has_previous %}<a class="btn btn-outline btn-sm" href="?active_page={{ pesanan_aktif.previous_page_number }}">Sebelumnya</a>{% endif %}
+                <span class="pagination-label">Halaman {{ pesanan_aktif.number }} dari {{ pesanan_aktif.paginator.num_pages }}</span>
+                {% if pesanan_aktif.has_next %}<a class="btn btn-outline btn-sm" href="?active_page={{ pesanan_aktif.next_page_number }}">Berikutnya</a>{% endif %}
+            </nav>
+        {% endif %}
+    </div>
+    
+    <!-- Tab: Riwayat -->
+    <div id="tab-riwayat" style="display: none;">
+        {% if pesanan_riwayat %}
+            <div class="card">
+                {% for pesanan in pesanan_riwayat %}
+                    <div style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span class="font-bold">{{ pesanan.created_at|date:"d M Y, H:i" }}</span>
+                            {% if pesanan.status == 'done' %}
+                                <span class="badge badge-success">Selesai</span>
+                            {% else %}
+                                <span class="badge badge-danger">Dibatalkan</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            {{ pesanan.nomor_antrean }} • {{ pesanan.items.first.nama_menu }} {% if pesanan.items.count > 1 %} + {{ pesanan.items.count|add:"-1" }} lainnya{% endif %}
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="font-bold text-primary">{{ pesanan.total_formatted }}</span>
+                            <!-- Dummy Rating -->
+                            <div class="order-rating" aria-label="Peringkat 5 bintang">
+                                {% for star in "12345" %}<i data-lucide="star" aria-hidden="true"></i>{% endfor %}
+                            </div>
+                        </div>
+                        {% for pesanan_pedagang in pesanan.pesanan_pedagang.all %}
+                            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">{% if pesanan_pedagang.vendor %}{{ pesanan_pedagang.vendor.get_full_name|default:pesanan_pedagang.vendor.username }}{% else %}Pedagang{% endif %}: {{ pesanan_pedagang.get_status_display }}</p>
+                        {% endfor %}
+                        {% if pesanan.payment %}
+                            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">Pembayaran {{ pesanan.get_metode_bayar_display }}: {{ pesanan.payment.get_status_display }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card p-4" style="text-align: center; margin-top: 2rem;">
+                <i data-lucide="history" class="empty-state-icon" aria-hidden="true"></i>
+                <h3 class="font-bold mb-2">Riwayat kosong</h3>
+                <p class="text-muted">Kamu belum pernah memesan apapun.</p>
+            </div>
+        {% endif %}
+        {% if pesanan_riwayat.paginator.num_pages > 1 %}
+            <nav class="pagination" aria-label="Navigasi riwayat pesanan">
+                {% if pesanan_riwayat.has_previous %}<a class="btn btn-outline btn-sm" href="?history_page={{ pesanan_riwayat.previous_page_number }}">Sebelumnya</a>{% endif %}
+                <span class="pagination-label">Halaman {{ pesanan_riwayat.number }} dari {{ pesanan_riwayat.paginator.num_pages }}</span>
+                {% if pesanan_riwayat.has_next %}<a class="btn btn-outline btn-sm" href="?history_page={{ pesanan_riwayat.next_page_number }}">Berikutnya</a>{% endif %}
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function switchTab(tabId, btnElement) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+        
+        document.getElementById('tab-aktif').style.display = tabId === 'aktif' ? 'block' : 'none';
+        document.getElementById('tab-riwayat').style.display = tabId === 'riwayat' ? 'block' : 'none';
+    }
+
+    if (new URLSearchParams(window.location.search).has('history_page')) {
+        switchTab('riwayat', document.querySelectorAll('.tab-btn')[1]);
+    }
+</script>
+{% endblock %}

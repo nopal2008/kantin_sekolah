@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="vendor-page">
+    <header class="vendor-page-heading">
+        <div>
+            <span class="eyebrow">PUSAT BANTUAN</span>
+            <h1 class="font-bold">Panduan penggunaan</h1>
+            <p class="text-muted">Bedakan verifikasi pembayaran dari proses pesanan pedagang.</p>
+        </div>
+    </header>
+
+    <div class="card" style="padding: 1.5rem; margin-bottom: 1rem;">
+        <h2 class="font-bold">Dua proses yang berbeda</h2>
+        <div style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); margin-top: 1rem;">
+            <section>
+                <h3 class="font-bold">1. Verifikasi pembayaran (Admin)</h3>
+                <p class="text-muted">Admin memeriksa bukti transfer dan nomor referensi. Setelah disetujui, pembayaran menjadi <strong>Terverifikasi</strong> dan pesanan diteruskan ke pedagang. Jika ditolak, pesanan dibatalkan dan stok dikembalikan.</p>
+                {% if is_admin %}
+                    <a class="btn btn-primary btn-sm" href="{% url 'payment_review_list' %}">Buka verifikasi pembayaran</a>
+                {% endif %}
+            </section>
+            <section>
+                <h3 class="font-bold">2. Proses pesanan (Pedagang)</h3>
+                <p class="text-muted">Pedagang tidak memverifikasi pembayaran. Setelah status pesanan menjadi <strong>Menunggu</strong>, pedagang mengonfirmasi untuk mulai menyiapkan pesanan, menandainya <strong>Siap diambil</strong>, lalu menyelesaikannya setelah pesanan diserahkan.</p>
+                {% if is_vendor %}
+                    <a class="btn btn-primary btn-sm" href="{% url 'vendor_order_list' %}">Buka pesanan pedagang</a>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 1.5rem; margin-bottom: 1rem;">
+        <h2 class="font-bold">Arti status</h2>
+        <ul style="padding-left: 1.25rem; margin-top: 0.75rem;">
+            <li><strong>Pembayaran: Menunggu Pembayaran</strong> — siswa belum mengirim bukti transfer.</li>
+            <li><strong>Pembayaran: Menunggu Verifikasi Admin</strong> — bukti sudah dikirim, belum diperiksa.</li>
+            <li><strong>Pembayaran: Terverifikasi</strong> — admin menyetujui pembayaran.</li>
+            <li><strong>Pesanan: Menunggu</strong> — pembayaran sudah beres; pedagang dapat mulai memproses.</li>
+            <li><strong>Pesanan: Diproses</strong> — pedagang sedang menyiapkan pesanan.</li>
+            <li><strong>Pesanan: Siap diambil</strong> — siswa dapat mengambil pesanannya.</li>
+            <li><strong>Pesanan: Selesai</strong> — pedagang mengonfirmasi pesanan telah diserahkan.</li>
+        </ul>
+        <p class="text-muted" style="margin-top: 1rem;">Status pembayaran menjawab “apakah uangnya sudah diperiksa?”, sedangkan status pesanan menjawab “sudah sampai tahap mana pesanan disiapkan atau diserahkan?”. Keduanya bukan persetujuan yang sama.</p>
+    </div>
+
+    <div class="card" style="padding: 1.5rem;">
+        <h2 class="font-bold">Alur siswa</h2>
+        <ol style="padding-left: 1.25rem; margin-top: 0.75rem;">
+            <li>Pilih menu, masukkan ke keranjang, lalu checkout.</li>
+            <li>Untuk GoPay, DANA, atau OVO, transfer ke nomor tujuan yang ditampilkan dan kirim bukti transfer.</li>
+            <li>Tunggu Admin memeriksa pembayaran. Setelah disetujui, pedagang akan memproses pesanan.</li>
+            <li>Pantau status di halaman <strong>Pesananku</strong> dan ambil pesanan setelah ditandai siap.</li>
+        </ol>
+    </div>
+</section>
+{% endblock %}

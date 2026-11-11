@@ -1,0 +1,38 @@
+<header class="top-navbar">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <button id="mobile-menu-toggle" class="menu-toggle btn btn-outline btn-sm" type="button" aria-label="Buka navigasi" aria-expanded="false" aria-controls="primary-sidebar">
+            <i data-lucide="menu" aria-hidden="true"></i>
+        </button>
+        <a href="{% if is_vendor %}{% url 'vendor_dashboard' %}{% elif is_admin %}{% url 'admin:index' %}{% else %}{% url 'beranda' %}{% endif %}" class="brand"><i data-lucide="utensils" aria-hidden="true"></i> SekolahKantin</a>
+    </div>
+    
+    <div class="nav-actions">
+        {% if user.is_authenticated %}
+            <span class="badge badge-success role-badge">{{ user_role }}</span>
+            {% if is_vendor %}
+                <a href="{% url 'vendor_dashboard' %}" class="btn btn-outline btn-sm role-dashboard-link">Dashboard pedagang</a>
+            {% elif is_admin %}
+                <a href="{% url 'admin:index' %}" class="btn btn-outline btn-sm role-admin-link">Admin</a>
+            {% else %}
+                <a href="{% url 'keranjang' %}" class="cart-icon" aria-label="Keranjang belanja">
+                    <i data-lucide="shopping-cart" aria-hidden="true"></i>
+                    <span class="cart-badge" style="display: none;">0</span>
+                </a>
+                <a href="{% url 'profil' %}" class="btn btn-outline btn-sm profile-link">Profil</a>
+            {% endif %}
+            <form method="post" action="{% url 'logout' %}" class="logout-form">
+                {% csrf_token %}
+                <button class="btn btn-outline btn-sm logout-button" type="submit" aria-label="Keluar" title="Keluar dari akun">
+                    <i data-lucide="log-out" aria-hidden="true"></i>
+                    <span>Keluar</span>
+                </button>
+            </form>
+        {% else %}
+            <a href="{% url 'keranjang' %}" class="cart-icon" aria-label="Keranjang belanja">
+                <i data-lucide="shopping-cart" aria-hidden="true"></i>
+                <span class="cart-badge" style="display: none;">0</span>
+            </a>
+            <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Login</a>
+        {% endif %}
+    </div>
+</header>

@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SekolahKantin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=9">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container role-{{ user_role|slugify }}">
+        {% include 'includes/navbar.html' %}
+        {% include 'includes/sidebar.html' %}
+        <button class="sidebar-backdrop" type="button" aria-label="Tutup navigasi" tabindex="-1"></button>
+        
+        <main class="main-content">
+            {% if messages %}
+                <div style="margin-bottom: 1rem;">
+                    {% for message in messages %}
+                        <div class="badge {% if message.tags == 'error' %}badge-danger{% else %}badge-success{% endif %}" style="display: block; padding: 0.75rem; margin-bottom: 0.5rem;">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+        
+        {% include 'includes/bottom_nav.html' %}
+    </div>
+
+    <script src="{% static 'js/app.js' %}?v=3"></script>
+    <script>
+        lucide.createIcons();
+        // Init cart badge globally
+        updateCartBadge({{ cart_count|default:0 }});
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

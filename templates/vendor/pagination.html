@@ -1,0 +1,11 @@
+{% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Navigasi halaman">
+        {% if page_obj.has_previous %}
+            <a class="btn btn-outline btn-sm" href="?page={{ page_obj.previous_page_number }}">Sebelumnya</a>
+        {% endif %}
+        <span class="pagination-label">Halaman {{ page_obj.number }} dari {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} data</span>
+        {% if page_obj.has_next %}
+            <a class="btn btn-outline btn-sm" href="?page={{ page_obj.next_page_number }}">Berikutnya</a>
+        {% endif %}
+    </nav>
+{% endif %}

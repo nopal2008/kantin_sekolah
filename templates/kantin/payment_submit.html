@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="vendor-page">
+    <header class="vendor-page-heading">
+        <div>
+            <span class="eyebrow">PEMBAYARAN</span>
+            <h1 class="font-bold">Bayar dengan {{ payment.get_metode_display }}</h1>
+            <p class="text-muted">Pesanan {{ pesanan.nomor_antrean }} · Total {{ payment.jumlah_formatted }}</p>
+        </div>
+        <a class="btn btn-outline" href="{% url 'pesananku' %}">Pesananku</a>
+    </header>
+
+    <div class="card p-4 mb-4">
+        <h2 class="font-bold mb-2">Transfer ke akun tujuan</h2>
+        <p class="text-muted">Pastikan nama penerima cocok sebelum menyelesaikan transfer.</p>
+        <dl>
+            <dt>Metode</dt>
+            <dd class="font-bold">{{ payment.get_metode_display }}</dd>
+            <dt>Nomor tujuan</dt>
+            <dd class="font-bold">{{ ewallet_number }}</dd>
+            <dt>Nama pemilik</dt>
+            <dd class="font-bold">{{ ewallet_account_name }}</dd>
+            <dt>Jumlah transfer</dt>
+            <dd class="font-bold text-primary">{{ payment.jumlah_formatted }}</dd>
+            <dt>Kode pesanan</dt>
+            <dd class="font-bold">{{ pesanan.nomor_antrean }}</dd>
+        </dl>
+        <p class="text-muted" style="margin-top: 1rem;">Setelah transfer, kirim gambar bukti transfer. Pembayaran baru dinyatakan berhasil setelah admin memeriksanya.</p>
+    </div>
+
+    <div class="card p-4">
+        <h2 class="font-bold mb-2">Status pembayaran: {{ payment.get_status_display }}</h2>
+        {% if payment.status == 'pending' %}
+            <form method="post" action="{% url 'payment_proof_submit' pesanan.pk %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="form-group">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<div class="text-muted" style="font-size: 0.875rem;">{{ field.help_text }}</div>{% endif %}
+                        {% for error in field.errors %}<div class="badge badge-danger" style="margin-top: 0.25rem;">{{ error }}</div>{% endfor %}
+                    </div>
+                {% endfor %}
+                <button class="btn btn-primary" type="submit">Kirim bukti transfer</button>
+            </form>
+        {% elif payment.status == 'submitted' %}
+            <p class="text-muted">Bukti transfer sudah dikirim. Pesanan akan diteruskan ke pedagang setelah admin memverifikasi pembayaran.</p>
+            {% if payment.bukti_transfer %}
+                <img src="{% url 'payment_proof_file' payment.pk %}" alt="Bukti transfer yang dikirim" style="max-width: 100%; max-height: 24rem; margin-top: 1rem;">
+            {% endif %}
+        {% elif payment.status == 'paid' %}
+            <p class="text-muted">Pembayaran sudah diverifikasi. Pedagang dapat mulai menyiapkan pesanan.</p>
+        {% else %}
+            <p class="text-muted">Pembayaran belum berhasil diverifikasi. Silakan hubungi admin sekolah.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

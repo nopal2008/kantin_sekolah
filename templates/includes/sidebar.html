@@ -1,0 +1,59 @@
+<aside class="sidebar" id="primary-sidebar" aria-label="Navigasi utama">
+    <div class="sidebar-heading">
+        <span>{{ user_role }}</span>
+        <button class="sidebar-close btn btn-outline btn-sm" type="button" aria-label="Tutup navigasi">
+            <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+    </div>
+    <nav class="sidebar-menu">
+        {% if is_vendor %}
+        <a href="{% url 'vendor_dashboard' %}" class="{% if request.resolver_match.url_name == 'vendor_dashboard' %}active{% endif %}">
+            <i data-lucide="layout-dashboard" aria-hidden="true"></i> Dashboard pedagang
+        </a>
+        <a href="{% url 'vendor_menu_list' %}" class="{% if request.resolver_match.url_name == 'vendor_menu_list' %}active{% endif %}">
+            <i data-lucide="utensils" aria-hidden="true"></i> Menu saya
+        </a>
+        <a href="{% url 'vendor_order_list' %}" class="{% if request.resolver_match.url_name == 'vendor_order_list' %}active{% endif %}">
+            <i data-lucide="clipboard-list" aria-hidden="true"></i> Pesanan
+        </a>
+        <a href="{% url 'help_guide' %}" class="{% if request.resolver_match.url_name == 'help_guide' %}active{% endif %}">
+            <i data-lucide="book-open-text" aria-hidden="true"></i> Panduan penggunaan
+        </a>
+        {% elif is_admin %}
+        <a href="{% url 'admin:index' %}" class="{% if request.path|slice:':7' == '/admin/' %}active{% endif %}">
+            <i data-lucide="shield-check" aria-hidden="true"></i> Admin sekolah
+        </a>
+        <a href="{% url 'payment_review_list' %}" class="{% if request.resolver_match.url_name == 'payment_review_list' %}active{% endif %}">
+            <i data-lucide="badge-check" aria-hidden="true"></i> Verifikasi pembayaran
+        </a>
+        <a href="{% url 'voucher_admin' %}" class="{% if request.resolver_match.url_name == 'voucher_admin' or request.resolver_match.url_name == 'voucher_admin_edit' %}active{% endif %}">
+            <i data-lucide="ticket-percent" aria-hidden="true"></i> Kelola voucher
+        </a>
+        <a href="{% url 'vendor_dashboard' %}" class="{% if request.resolver_match.url_name == 'vendor_dashboard' %}active{% endif %}">
+            <i data-lucide="layout-dashboard" aria-hidden="true"></i> Operasional kantin
+        </a>
+        <a href="{% url 'vendor_order_list' %}" class="{% if request.resolver_match.url_name == 'vendor_order_list' %}active{% endif %}">
+            <i data-lucide="clipboard-list" aria-hidden="true"></i> Pesanan
+        </a>
+        <a href="{% url 'help_guide' %}" class="{% if request.resolver_match.url_name == 'help_guide' %}active{% endif %}">
+            <i data-lucide="book-open-text" aria-hidden="true"></i> Panduan penggunaan
+        </a>
+        {% else %}
+        <a href="{% url 'beranda' %}" class="{% if request.resolver_match.url_name == 'beranda' %}active{% endif %}">
+            <i data-lucide="house" aria-hidden="true"></i> Beranda
+        </a>
+        <a href="{% url 'menu' %}" class="{% if request.resolver_match.url_name == 'menu' %}active{% endif %}">
+            <i data-lucide="utensils" aria-hidden="true"></i> Menu
+        </a>
+        <a href="{% url 'pesananku' %}" class="{% if request.resolver_match.url_name == 'pesananku' %}active{% endif %}">
+            <i data-lucide="clipboard-list" aria-hidden="true"></i> Pesananku
+        </a>
+        <a href="{% url 'voucher_list' %}" class="{% if request.resolver_match.url_name == 'voucher_list' %}active{% endif %}">
+            <i data-lucide="ticket-percent" aria-hidden="true"></i> Voucher
+        </a>
+        <a href="{% url 'profil' %}" class="{% if request.resolver_match.url_name == 'profil' %}active{% endif %}">
+            <i data-lucide="user-round" aria-hidden="true"></i> Profil
+        </a>
+        {% endif %}
+    </nav>
+</aside>

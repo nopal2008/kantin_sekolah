@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="font-bold mb-4" style="font-size: 1.5rem;">Checkout</h1>
+    
+    <div class="card p-4 mb-4">
+        <h3 class="font-bold mb-4">Informasi Pemesan</h3>
+        <div class="form-group">
+            <label class="form-label text-muted">Nama Lengkap</label>
+            <input type="text" value="{{ user.get_full_name }}" class="form-control" readonly style="background: var(--bg-color);">
+        </div>
+        <div class="form-group">
+            <label class="form-label text-muted">Kelas</label>
+            <input type="text" value="{{ profil.kelas }}" class="form-control" readonly style="background: var(--bg-color);">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Catatan Tambahan (Opsional)</label>
+            <textarea id="catatan" class="form-control" placeholder="Contoh: Jangan terlalu pedas ya bu..." rows="2"></textarea>
+        </div>
+    </div>
+    
+    <div class="card p-4 mb-4">
+        <h3 class="font-bold mb-4">Ringkasan Pesanan</h3>
+        {% for item in items %}
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>{{ item.qty }}x {{ item.nama }}</span>
+                <span class="font-bold">{{ item.subtotal_fmt }}</span>
+            </div>
+        {% endfor %}
+        <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 1rem 0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span class="text-muted">Subtotal</span>
+            <span>{{ subtotal_fmt }}</span>
+        </div>
+        {% if applied_voucher %}
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span class="text-muted">Voucher {{ applied_voucher.nama }}</span>
+                <span class="text-primary">-{{ discount_fmt }}</span>
+            </div>
+        {% else %}
+            <p class="text-muted">Voucher otomatis diterapkan jika subtotal memenuhi minimum pembelian voucher yang aktif.</p>
+        {% endif %}
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="font-bold text-muted">Total Pembayaran</span>
+            <span class="font-bold text-primary" style="font-size: 1.25rem;">{{ total_fmt }}</span>
+        </div>
+    </div>
+    
+    <div class="card p-4 mb-4">
+        <h3 class="font-bold mb-4">Pilih Metode Pembayaran</h3>
+        
+        <label style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+            <input type="radio" name="metode_bayar" value="tunai" checked>
+            <div>
+                <div class="font-bold">Tunai (Bayar di Kantin)</div>
+                <div class="text-muted" style="font-size: 0.875rem;">Siapkan uang pas ya</div>
+            </div>
+        </label>
+        
+        <label style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+            <input type="radio" name="metode_bayar" value="saldo">
+            <div style="width: 100%;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="font-bold">Saldo Sekolah</span>
+                    <span class="font-bold text-primary">{{ saldo_fmt }}</span>
+                </div>
+                <div class="text-muted" style="font-size: 0.875rem;">Sisa saldo setelah transaksi: {{ sisa_saldo_fmt }}</div>
+                {% if sisa_saldo < 0 %}
+                    <div style="color: var(--danger-color); font-size: 0.75rem; margin-top: 4px;">Saldo tidak mencukupi</div>
+                {% endif %}
+            </div>
+        </label>
+        
+        <label style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+            <input type="radio" name="metode_bayar" value="gopay">
+            <div>
+                <div class="font-bold">GoPay</div>
+                <div class="text-muted" style="font-size: 0.875rem;">Transfer ke nomor {{ ewallet_number }} atas nama {{ ewallet_account_name }}. Admin akan memeriksa bukti transfer.</div>
+            </div>
+        </label>
+        <label style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+            <input type="radio" name="metode_bayar" value="dana">
+            <div>
+                <div class="font-bold">DANA</div>
+                <div class="text-muted" style="font-size: 0.875rem;">Transfer ke nomor {{ ewallet_number }} atas nama {{ ewallet_account_name }}. Admin akan memeriksa bukti transfer.</div>
+            </div>
+        </label>
+        <label style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; cursor: pointer;">
+            <input type="radio" name="metode_bayar" value="ovo">
+            <div>
+                <div class="font-bold">OVO</div>
+                <div class="text-muted" style="font-size: 0.875rem;">Transfer ke nomor {{ ewallet_number }} atas nama {{ ewallet_account_name }}. Admin akan memeriksa bukti transfer.</div>
+            </div>
+        </label>
+    </div>
+    
+    <button id="btn-konfirmasi" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.125rem;">
+        Konfirmasi & Pesan
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('btn-konfirmasi').addEventListener('click', async () => {
+        const metode_bayar = document.querySelector('input[name="metode_bayar"]:checked').value;
+        const catatan = document.getElementById('catatan').value;
+        
+        // Cek saldo
+        const sisaSaldo = Number("{{ sisa_saldo|default:'0' }}");
+        if (metode_bayar === 'saldo' && sisaSaldo < 0) {
+            showToast('Saldo sekolah tidak mencukupi!', 'error');
+            return;
+        }
+        
+        try {
+            document.getElementById('btn-konfirmasi').disabled = true;
+            document.getElementById('btn-konfirmasi').innerText = 'Memproses...';
+            
+            const data = await fetchAPI('{% url "api_checkout" %}', {
+                method: 'POST',
+                body: JSON.stringify({ metode_bayar, catatan })
+            });
+            
+            alert(`Pesanan berhasil! Nomor Antrean: ${data.nomor_antrean}`);
+            window.location.href = data.payment_url || '{% url "pesananku" %}';
+            
+        } catch (e) {
+            document.getElementById('btn-konfirmasi').disabled = false;
+            document.getElementById('btn-konfirmasi').innerText = 'Konfirmasi & Pesan';
+        }
+    });
+</script>
+{% endblock %}

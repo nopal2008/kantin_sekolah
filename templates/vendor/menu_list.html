@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<section class="vendor-page">
+    <header class="vendor-page-heading">
+        <div>
+            <span class="eyebrow">KELOLA KATALOG</span>
+            <h1 class="font-bold">Menu saya</h1>
+            <p class="text-muted">Daftar menu dibatasi 10 data per halaman.</p>
+        </div>
+        <div class="vendor-heading-actions">
+            <a class="btn btn-outline" href="{% url 'vendor_dashboard' %}">Dashboard</a>
+            <a class="btn btn-primary" href="{% url 'vendor_menu_create' %}">
+                <i data-lucide="plus" aria-hidden="true"></i> Tambah menu
+            </a>
+        </div>
+    </header>
+
+    <div class="card vendor-table-card">
+        <div class="vendor-table-scroll">
+            <table class="vendor-table">
+                <thead>
+                    <tr>
+                        <th>Nama menu</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th>Stok</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for menu in page_obj %}
+                        <tr>
+                            <td data-label="Nama menu">{{ menu.nama }}</td>
+                            <td data-label="Kategori">{{ menu.get_kategori_display }}</td>
+                            <td data-label="Harga">Rp {{ menu.harga|intcomma }}</td>
+                            <td data-label="Stok">{{ menu.stok|intcomma }}</td>
+                            <td data-label="Status">
+                                {% if menu.is_active %}<span class="badge badge-success">Aktif</span>
+                                {% else %}<span class="badge badge-danger">Nonaktif</span>{% endif %}
+                            </td>
+                            <td data-label="Aksi">
+                                <div class="vendor-row-actions">
+                                    <a class="btn btn-outline btn-sm" href="{% url 'vendor_menu_update' menu.id %}">Ubah</a>
+                                    <form method="post" action="{% url 'vendor_menu_delete' menu.id %}" onsubmit="return confirm('Hapus menu {{ menu.nama|escapejs }}?');">
+                                        {% csrf_token %}
+                                        <button class="btn btn-danger btn-sm" type="submit">Hapus</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td class="vendor-empty" colspan="6">Belum ada menu. Tambahkan menu pertama Anda.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% include 'vendor/pagination.html' %}
+</section>
+{% endblock %}

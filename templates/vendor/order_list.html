@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<section class="vendor-page">
+    <header class="vendor-page-heading">
+        <div>
+            <span class="eyebrow">PENJUALAN</span>
+            <h1 class="font-bold">Pesanan</h1>
+            <p class="text-muted">Hanya pesanan yang berisi menu Anda ditampilkan.</p>
+        </div>
+        <div class="vendor-heading-actions">
+            <a class="btn btn-outline" href="{% url 'vendor_menu_list' %}">Menu saya</a>
+            <a class="btn btn-outline" href="{% url 'vendor_dashboard' %}">Dashboard</a>
+        </div>
+    </header>
+
+    <div class="card vendor-table-card">
+        <div class="vendor-table-scroll">
+            <table class="vendor-table">
+                <thead>
+                    <tr>
+                        <th>Antrean</th>
+                        <th>Pelanggan</th>
+                        <th>Menu Anda</th>
+                        <th>Subtotal menu Anda</th>
+                        <th>Pembayaran</th>
+                        <th>Status</th>
+                        <th>Waktu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vendor_order in page_obj %}
+                        {% with order=vendor_order.pesanan %}
+                        <tr>
+                            <td data-label="Antrean">{{ order.nomor_antrean }}</td>
+                            <td data-label="Pelanggan">{{ order.user.get_full_name|default:order.user.username }}</td>
+                            <td data-label="Menu Anda">
+                                {% for item in vendor_order.vendor_items %}
+                                    <span class="vendor-order-item">{{ item.nama_menu }} × {{ item.qty }}</span>
+                                {% empty %}
+                                    <span class="text-muted">Item tidak tersedia</span>
+                                {% endfor %}
+                            </td>
+                            <td data-label="Subtotal menu Anda">Rp {{ vendor_order.vendor_total|intcomma }}</td>
+                            <td data-label="Pembayaran">
+                                {{ order.get_metode_bayar_display }}<br>
+                                <span class="text-muted">{{ order.payment.get_status_display }}</span>
+                            </td>
+                            <td data-label="Status">
+                                {{ vendor_order.get_status_display }}
+                                {% if vendor_order.status == 'awaiting_payment' %}
+                                    <p class="text-muted" style="font-size: 0.8rem;">Menunggu verifikasi admin</p>
+                                {% elif vendor_order.status == 'waiting' %}
+                                    {% if order.metode_bayar == 'tunai' or order.payment.status == 'paid' %}
+                                        <form method="post" action="{% url 'vendor_order_update' vendor_order.pk %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="confirm">
+                                            <button class="btn btn-primary btn-sm" type="submit">Konfirmasi &amp; proses</button>
+                                        </form>
+                                    {% else %}
+                                        <p class="text-muted" style="font-size: 0.8rem;">Menunggu pembayaran diverifikasi</p>
+                                    {% endif %}
+                                {% elif vendor_order.status == 'cooking' %}
+                                    <form method="post" action="{% url 'vendor_order_update' vendor_order.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="ready">
+                                        <button class="btn btn-primary btn-sm" type="submit">Tandai siap diambil</button>
+                                    </form>
+                                {% elif vendor_order.status == 'ready' %}
+                                    <form method="post" action="{% url 'vendor_order_update' vendor_order.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="complete">
+                                        <button class="btn btn-outline btn-sm" type="submit">Selesaikan pesanan</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                            <td data-label="Waktu">{{ order.created_at|date:"d M Y, H:i" }}</td>
+                        </tr>
+                        {% endwith %}
+                    {% empty %}
+                        <tr><td class="vendor-empty" colspan="7">Belum ada pesanan untuk menu Anda.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% include 'vendor/pagination.html' %}
+</section>
+{% endblock %}

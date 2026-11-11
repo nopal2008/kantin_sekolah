@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 2rem auto;">
+    <div class="card p-4">
+        <h2 class="text-primary font-bold mb-4" style="text-align: center; font-size: 1.5rem;">Login ke SekolahKantin</h2>
+        
+        {% if error %}
+            <div class="badge badge-danger mb-4" style="display: block; padding: 0.75rem; text-align: center;">
+                {{ error }}
+            </div>
+        {% endif %}
+        
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" name="username" id="username" class="form-control" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" name="password" id="password" class="form-control" required>
+            </div>
+            
+            <input type="hidden" name="next" value="{{ request.GET.next|default:'/' }}">
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">
+                Masuk
+            </button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <p class="text-muted" style="font-size: 0.875rem;">Pedagang menggunakan akun yang dibuat oleh admin sekolah.</p>
+            <p class="text-muted" style="font-size: 0.875rem;">Belum punya akun siswa? <a href="{% url 'student_register' %}">Daftar di sini</a>.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

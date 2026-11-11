@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="welcome-heading">
+    <span class="eyebrow">KANTIN SEKOLAH · PESAN JADI MUDAH</span>
+    <h1 class="font-bold">Hai, {{ user_nama }}!</h1>
+    <p class="text-muted">Lagi ingin makan apa hari ini?</p>
+</section>
+
+<section class="promo-banner mb-4">
+    <div class="promo-copy">
+        <span class="promo-label"><i data-lucide="sparkles" aria-hidden="true"></i> SPESIAL HARI JUMAT</span>
+        <h2 class="font-bold">Makan enak,<br>lebih hemat!</h2>
+        <p>Diskon 20% untuk semua menu makanan berat. Yuk, pilih favoritmu!</p>
+        <a href="{% url 'menu' %}?kategori=makanan_berat" class="btn promo-button">Lihat menu promo <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="promo-art" aria-hidden="true">
+        <span class="promo-sparkle sparkle-one"><i data-lucide="sparkles" aria-hidden="true"></i></span>
+        <span class="promo-sparkle sparkle-two"><i data-lucide="sparkles" aria-hidden="true"></i></span>
+        <div class="promo-plate"><i data-lucide="utensils" aria-hidden="true"></i></div>
+        <span class="promo-food food-one"><i data-lucide="salad" aria-hidden="true"></i></span>
+        <span class="promo-food food-two"><i data-lucide="citrus" aria-hidden="true"></i></span>
+    </div>
+</section>
+
+<nav class="category-shortcuts" aria-label="Kategori menu">
+    <a href="{% url 'menu' %}?kategori=makanan_berat"><i data-lucide="utensils" aria-hidden="true"></i> Makanan berat</a>
+    <a href="{% url 'menu' %}?kategori=jajanan_ringan"><i data-lucide="croissant" aria-hidden="true"></i> Jajanan</a>
+    <a href="{% url 'menu' %}?kategori=minuman"><i data-lucide="cup-soda" aria-hidden="true"></i> Minuman</a>
+</nav>
+
+<div class="mb-4">
+    <div class="section-heading">
+        <div>
+            <span class="eyebrow">PALING DISUKAI</span>
+            <h2 class="font-bold">Favorit teman-teman</h2>
+        </div>
+        <a href="{% url 'menu' %}" class="text-primary font-bold section-link">Lihat semua <span aria-hidden="true">→</span></a>
+    </div>
+    
+    <div class="bestseller-row hide-scroll">
+        {% for menu in bestsellers %}
+            <div class="bestseller-item">
+                {% include 'includes/menu_card.html' %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="mb-4">
+    <div class="section-heading">
+        <div>
+            <span class="eyebrow">PILIHAN BUAT KAMU</span>
+            <h2 class="font-bold">Enak buat nemenin harimu</h2>
+        </div>
+        <a href="{% url 'menu' %}" class="text-primary font-bold section-link">Jelajahi menu <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="grid-menu">
+        {% for menu in favorit %}
+            {% include 'includes/menu_card.html' %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
